@@ -87,9 +87,6 @@ void mqtt_app_start(void)
 void esp_mesh_mqtt_task(void *arg)
 {
     is_running = true;
-    char *print;
-    mesh_data_t data;
-    esp_err_t err;
 
     mqtt_app_start();
     while (is_running) {

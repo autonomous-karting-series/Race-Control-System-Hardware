@@ -4,7 +4,6 @@
 
 #include "driver/gpio.h"
 
-// #define ONBOARD_LED GPIO_NUM_15
 #define ONBOARD_ANTENNA GPIO_NUM_3
 #define EXTERNAL_ANTENNA GPIO_NUM_14
 
@@ -22,8 +21,6 @@
 #define LOOP_DLY 1000
 uint8_t s_led_state = 0;
 
-// static TaskHandle_t rx_led_handle = NULL;
-
 static void configure_external_antenna() {
     gpio_set_direction(ONBOARD_ANTENNA, GPIO_MODE_OUTPUT);
     gpio_set_level(ONBOARD_ANTENNA, GPIO_LOW);
@@ -31,48 +28,6 @@ static void configure_external_antenna() {
     gpio_set_direction(EXTERNAL_ANTENNA, GPIO_MODE_OUTPUT);
     gpio_set_level(EXTERNAL_ANTENNA, GPIO_HIGH);
 }
-
-// void update_led(void *arg)
-// {
-//     ESP_LOGI("LED", "Starting LED Task");
-//     is_running = true;
-
-//     // while (!rx_led)
-//     // {
-//     //     ESP_LOGI("LED", "Waiting for Semaphore");
-//     //     vTaskDelay(1000 / portTICK_PERIOD_MS);
-//     // }
-    
-//     // ESP_LOGI("LED", "Semaphore created, starting loop");
-//     // ESP_LOGI("LED", "Semaphore count %d", );
-
-//     while(is_running)
-//     {
-//         // if (xSemaphoreTake(rx_led, portMAX_DELAY))
-//         ESP_LOGI("LED", "Waiting for notify");
-//         ESP_LOGI("LED", "RX Handle is Null: %d", rx_led_handle == NULL);
-
-//         ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
-
-//         ESP_LOGI("LED", "blinking!");
-//         // gpio_set_level(ONBOARD_LED, 1);
-//         // vTaskDelay(100 / portTICK_PERIOD_MS);
-        
-//         // s_led_state = 0;
-//         // gpio_set_level(ONBOARD_LED, 0);
-
-//         // vTaskDelay(100 / portTICK_PERIOD_MS);
-//     }
-
-//     rx_led_handle = NULL;
-//     vTaskDelete(NULL);
-// }
-
-// static void configure_led()
-// {
-//     gpio_reset_pin(ONBOARD_LED);
-//     gpio_set_direction(ONBOARD_LED, GPIO_MODE_OUTPUT);
-// }
 
 extern "C" void app_main(void)
 {
