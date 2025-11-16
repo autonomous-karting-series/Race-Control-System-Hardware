@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+message Track {
+    enum ControlMode {
+        CONTROL_UNDEFINED = 0;
+        CONTROL_RC = 1;
+        CONTROL_AUTO = 2;
+        CONTROL_BOTH = 3;
+    }
+
+    enum Flags {
+        FLAG_RED = 0;
+        FLAG_YELLOW = 1;
+        FLAG_ORANGE = 2;
+        FLAG_GREEN = 3;
+        FLAG_BLACK = 4;
+        FLAG_WHITE = 5;
+        FLAG_CHEQUERED = 6;
+    }
+
+    ControlMode allowed_control = 1;
+    Flags flag_state = 2;
+}

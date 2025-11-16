@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "kart.proto";
+import "track.proto";
+
+message MQTTMessage {
+  enum Topic {
+    MQTT_TOPIC_UNDEFINED = 0;
+    MQTT_TOPIC_TRACK = 1;
+    MQTT_TOPIC_KART = 2;
+  }
+
+  Topic topic = 1;
+  Timestamp timestamp = 2;
+  oneof payload {
+    Kart kart_status = 3;
+    Track track_status = 4;
+  };
+}
+
+// ==========================
+// Well-Known Messages
+// ==========================
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}

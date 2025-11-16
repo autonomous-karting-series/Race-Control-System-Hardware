@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+message Kart {
+    enum ControlMode {
+        CONTROL_UNDEFINED = 0;
+        CONTROL_RC = 1;
+        CONTROL_AUTO = 2;
+    }
+
+    bool is_kart_connected = 1;
+    int32 kart_id = 2;
+    ControlMode control = 3;
+    float speed = 4;
+    float steering_angle = 5;
+    LatLng position = 6;
+}
+
+// ==========================
+// Well-Known Messages
+// ==========================
+message LatLng {
+  double latitude = 1;
+  double longitude = 2;
+}
