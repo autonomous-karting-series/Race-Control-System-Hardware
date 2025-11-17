@@ -21,7 +21,7 @@
 #define LOOP_DLY 1000
 uint8_t s_led_state = 0;
 
-static void configure_external_antenna() {
+void configure_external_antenna() {
     gpio_set_direction(ONBOARD_ANTENNA, GPIO_MODE_OUTPUT);
     gpio_set_level(ONBOARD_ANTENNA, GPIO_LOW);
 
@@ -31,22 +31,33 @@ static void configure_external_antenna() {
 
 extern "C" void app_main(void)
 {
+    // Set all logs to Info due to enabled debug in config
     esp_log_level_set("*", ESP_LOG_INFO);
-    esp_log_level_set("mesh", ESP_LOG_ERROR);
-    esp_log_level_set("wifi", ESP_LOG_ERROR);
+
+    // Reduce mesh and wifi log bloat
+    esp_log_level_set("mesh", ESP_LOG_WARN);
+    esp_log_level_set("wifi", ESP_LOG_WARN);
+
+    // Active Debug
     esp_log_level_set("MESH_RX", ESP_LOG_DEBUG);
 
     /* Initialize TCP/IP stack and system event loop */
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
+    // Hardware Initialization
     configure_external_antenna();
     setup_indicator_leds();
-    start_rx_led();
 
     initialize_wifi();
+
+    // RX LED Indicator needs to be initialized before mesh
+    start_rx_led();
     start_mesh();
 
     while (1) {
+
+        // Not doing anything in main task
+
         vTaskDelay(LOOP_DLY / portTICK_PERIOD_MS);
     }
 }
@@ -67,8 +78,9 @@ extern "C" void app_main(void)
  *
  * Leaf Nodes:
  *  - [ ] Connect to PC Connector
+ *    -> [ ] Create timer for health watchdog that resets every message from connector
  *  - [ ] Forward MQTT packets to PC Connector
- *    -> [ ] ignore messages from self
+ *    -> [x] ignore messages from self
  *  - [x] Create MQTT packets and send to Root
  *  - [ ] Collect GPS points
  *  - [ ] Send hardware data to MQTT
