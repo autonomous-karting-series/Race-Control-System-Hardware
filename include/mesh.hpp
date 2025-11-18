@@ -8,6 +8,7 @@
 #include "esp_mac.h"
 #include "esp_event.h"
 #include "esp_mesh.h"
+#include "sdkconfig.h"
 
 #include "string"
 #include "format"
@@ -35,9 +36,9 @@ static const uint8_t MAX_CONNECTIONS = 4; // Mesh Stations (Root + 0-3 Root enab
 static const uint8_t NONMESH_MAX_CONNECTIONS = 0; // NON-Mesh Stations
 static const uint8_t MESH_ROUTE_TABLE_MAX_SIZE = 50; // Max Routing table size
 static const mesh_addr_t BROADCAST_ADDR = { .addr = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}};
-static const char* MESH_TAG = "Mesh Controller";
-static const char* MESH_RX_TAG = "MESH_RX";
-static const char* MESH_TX_TAG = "MESH_TX";
+static const char MESH_TAG[] = "Mesh Controller";
+static const char MESH_RX_TAG[] = "MESH_RX";
+static const char MESH_TX_TAG[] = "MESH_TX";
 
 
 /*******************************************************

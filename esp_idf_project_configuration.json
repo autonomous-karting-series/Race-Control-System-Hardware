@@ -1,0 +1,52 @@
+{
+  "RCS_Leaf": {
+    "build": {
+      "compileArgs": [],
+      "ninjaArgs": [],
+      "buildDirectoryPath": "/home/agoeden/Documents/Dev/Race-Control-System-Hardware/build/rcs_leaf",
+      "sdkconfigDefaults": [],
+      "sdkconfigFilePath": ""
+    },
+    "env": {},
+    "idfTarget": "esp32c6",
+    "flashBaudRate": "",
+    "monitorBaudRate": "",
+    "openOCD": {
+      "debugLevel": -1,
+      "configs": [],
+      "args": []
+    },
+    "tasks": {
+      "preBuild": "protoc --plugin=protoc-gen-nanopb=submodules/nanopb/generator/protoc-gen-nanopb --nanopb_out=components/nanopb/generated  proto/*.proto -Iproto",
+      "preFlash": "",
+      "postBuild": "",
+      "postFlash": ""
+    }
+  },
+  "RCS_Root": {
+    "build": {
+      "compileArgs": [
+        "CONFIG_ROOT_NODE"
+      ],
+      "ninjaArgs": [],
+      "buildDirectoryPath": "/home/agoeden/Documents/Dev/Race-Control-System-Hardware/build/rcs_root",
+      "sdkconfigDefaults": [],
+      "sdkconfigFilePath": ""
+    },
+    "env": {},
+    "idfTarget": "esp32c6",
+    "flashBaudRate": "",
+    "monitorBaudRate": "",
+    "openOCD": {
+      "debugLevel": -1,
+      "configs": [],
+      "args": []
+    },
+    "tasks": {
+      "preBuild": "protoc --plugin=protoc-gen-nanopb=submodules/nanopb/generator/protoc-gen-nanopb --nanopb_out=components/nanopb/generated  proto/*.proto -Iproto",
+      "preFlash": "",
+      "postBuild": "",
+      "postFlash": ""
+    }
+  }
+}

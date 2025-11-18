@@ -10,7 +10,7 @@ void rx_led_indicator_task(void* arg)
         gpio_set_level(RX_LED, 1);
         vTaskDelay(RX_LED_DELAY / portTICK_PERIOD_MS);
         gpio_set_level(RX_LED, 0);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 
     rx_led_handle = NULL;

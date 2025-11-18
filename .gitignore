@@ -5,3 +5,5 @@
 .vscode/ipch
 .vscode/settings.json
 build
+submodules
+managed_components

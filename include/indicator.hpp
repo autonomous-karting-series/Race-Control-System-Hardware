@@ -14,8 +14,8 @@ esp_err_t setup_indicator_leds();
 esp_err_t start_rx_led();
 esp_err_t notify_rx_led();
 
-static const char* RX_LED_TAG = "INDICATOR";
-static const int RX_LED_DELAY = 100;
+static const char RX_LED_TAG[] = "INDICATOR";
+static const int RX_LED_DELAY = 50;
 
 static TaskHandle_t rx_led_handle;
 

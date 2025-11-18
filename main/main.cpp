@@ -22,6 +22,8 @@
 uint8_t s_led_state = 0;
 
 void configure_external_antenna() {
+    // esp_phy_set_ant_gpio();
+
     gpio_set_direction(ONBOARD_ANTENNA, GPIO_MODE_OUTPUT);
     gpio_set_level(ONBOARD_ANTENNA, GPIO_LOW);
 

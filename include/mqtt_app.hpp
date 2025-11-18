@@ -4,12 +4,13 @@
 #include "esp_log.h"
 #include "unordered_map"
 #include "mqtt_client.h"
+#include "sdkconfig.h"
 
 #include "mesh.hpp"
 
-#include "pb_encode.h"
-#include "pb_decode.h"
-#include "mqtt.pb.h"
+// #include "pb_encode.h"
+// #include "pb_decode.h"
+// #include "mqtt.pb.h"
 
 /*******************************************************
  *                Constants

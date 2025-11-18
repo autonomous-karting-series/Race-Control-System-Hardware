@@ -342,7 +342,7 @@ void initialize_wifi()
 
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    esp_wifi_get_mac((wifi_interface_t) ESP_IF_WIFI_STA, mesh_current_addr.addr);
+    esp_wifi_get_mac(WIFI_IF_STA, mesh_current_addr.addr);
     ESP_LOGW("WIFI", "MAC ADDR: " MACSTR, MAC2STR(mesh_current_addr.addr));
 }
 
@@ -350,8 +350,8 @@ void start_mesh()
 {
     ESP_ERROR_CHECK(esp_mesh_init());
 
-    ESP_ERROR_CHECK(esp_mesh_set_topology(CONFIG_TOPOLOGY));
-    ESP_ERROR_CHECK(esp_mesh_set_max_layer(CONFIG_MAX_LAYER));
+    ESP_ERROR_CHECK(esp_mesh_set_topology(MESH_TOPO_TREE));
+    ESP_ERROR_CHECK(esp_mesh_set_max_layer(8));
     ESP_ERROR_CHECK(esp_mesh_set_xon_qsize(128));
     ESP_ERROR_CHECK(esp_mesh_disable_ps());
     ESP_ERROR_CHECK(esp_mesh_set_ap_assoc_expire(10));
