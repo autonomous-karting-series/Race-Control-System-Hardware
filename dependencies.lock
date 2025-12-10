@@ -122,7 +122,7 @@ dependencies:
       type: service
     version: 1.0.0
   espressif/w5500:
-    component_hash: 0bfa69f4ebd57ec8554ee28f31f777f06df549dcb69f48121845402d447d077a
+    component_hash: e6e47022a1f509d1d1197652a554aea84a8cd4d99161061e187ecf4b78a7f6ca
     dependencies:
     - name: idf
       require: private
@@ -130,7 +130,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.0.0
+    version: 1.0.1
   idf:
     source:
       type: idf
