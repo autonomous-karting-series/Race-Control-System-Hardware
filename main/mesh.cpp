@@ -143,6 +143,9 @@ void esp_mesh_rx_main(void *arg)
                         data.proto = MESH_PROTO_MQTT;
                         data.tos = MESH_TOS_P2P;
                         mesh_send_root(&data);
+
+                        // Send to ETH
+                        
                     }
                 }
                 break;

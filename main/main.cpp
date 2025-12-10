@@ -2,24 +2,21 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "esp_log.h"
+#include "esp_err.h"
+#include "sdkconfig.h"
 #include "driver/gpio.h"
+
+#include "mesh.hpp"
+#include "indicator.hpp"
+#include "eth_spi_driver.hpp"
 
 #define ONBOARD_ANTENNA GPIO_NUM_3
 #define EXTERNAL_ANTENNA GPIO_NUM_14
 
 #define GPIO_HIGH 1
 #define GPIO_LOW 0
-
-// Logging and Config
-#include "esp_log.h"
-#include "esp_err.h"
-#include "sdkconfig.h"
-
-#include "mesh.hpp"
-#include "indicator.hpp"
-
 #define LOOP_DLY 1000
-uint8_t s_led_state = 0;
 
 void configure_external_antenna() {
     // esp_phy_set_ant_gpio();
@@ -33,15 +30,14 @@ void configure_external_antenna() {
 
 extern "C" void app_main(void)
 {
-    // Set all logs to Info due to enabled debug in config
-    esp_log_level_set("*", ESP_LOG_INFO);
-
     // Reduce mesh and wifi log bloat
     esp_log_level_set("mesh", ESP_LOG_WARN);
     esp_log_level_set("wifi", ESP_LOG_WARN);
 
     // Active Debug
     esp_log_level_set("MESH_RX", ESP_LOG_DEBUG);
+    esp_log_level_set("w5500*", ESP_LOG_DEBUG);
+    esp_log_level_set("esp_eth*", ESP_LOG_DEBUG);
 
     /* Initialize TCP/IP stack and system event loop */
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -49,17 +45,15 @@ extern "C" void app_main(void)
     // Hardware Initialization
     configure_external_antenna();
     setup_indicator_leds();
-
-    initialize_wifi();
-
+    // setup_eth_gpio();
+    
     // RX LED Indicator needs to be initialized before mesh
-    start_rx_led();
+    initialize_wifi();
+    init_eth();
     start_mesh();
 
     while (1) {
-
         // Not doing anything in main task
-
         vTaskDelay(LOOP_DLY / portTICK_PERIOD_MS);
     }
 }

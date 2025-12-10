@@ -1,95 +1,110 @@
 #include "eth_spi_driver.hpp"
 
-esp_err_t spi_bus_init()
+/* Event handler for IP_EVENT_ETH_GOT_IP */
+static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
+                                 int32_t event_id, void *event_data)
 {
-    esp_err_t ret = ESP_OK;
+    ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
+    const esp_netif_ip_info_t *ip_info = &event->ip_info;
 
-    // // Install GPIO ISR handler to be able to service SPI Eth modules interrupts
-    // ret = gpio_install_isr_service(0);
-    // if (ret == ESP_OK) {
-    //     gpio_isr_svc_init_by_eth = true;
-    // } else if (ret == ESP_ERR_INVALID_STATE) {
-    //     ESP_LOGW(ETH_TAG, "GPIO ISR handler has been already installed");
-    //     ret = ESP_OK; // ISR handler has been already installed so no issues
-    // } else {
-    //     ESP_LOGE(ETH_TAG, "GPIO ISR handler install failed");
-    //     return ret;
-    // }
-
-    // // Init SPI bus
-    // spi_bus_config_t buscfg = {
-    //     .mosi_io_num = SPI_MOSI,
-    //     .miso_io_num = SPI_MISO,
-    //     .sclk_io_num = SPI_CLK,
-    //     .quadwp_io_num = -1,
-    //     .quadhd_io_num = -1,
-    //     .max_transfer_sz = ETH_MAX_BYTES
-    // };
-    
-    // ret = spi_bus_initialize(ETH_HOST, &buscfg, SPI_DMA_CH_AUTO);
-
-    return ret;
+    ESP_LOGI(ETH_TAG, "Ethernet Got IP Address");
+    ESP_LOGI(ETH_TAG, "~~~~~~~~~~~");
+    ESP_LOGI(ETH_TAG, "IP: " IPSTR, IP2STR(&ip_info->ip));
+    ESP_LOGI(ETH_TAG, "MASK: " IPSTR, IP2STR(&ip_info->netmask));
+    ESP_LOGI(ETH_TAG, "GW: " IPSTR, IP2STR(&ip_info->gw));
+    ESP_LOGI(ETH_TAG, "~~~~~~~~~~~");
 }
 
-// esp_eth_handle_t eth_init_spi(spi_eth_module_config_t *spi_eth_module_config, esp_eth_mac_t **mac_out, esp_eth_phy_t **phy_out)
-// {
-//     esp_eth_handle_t ret = NULL;
+void IRAM_ATTR gpio_isr_handler(void* arg)
+{  
+    /* Disable the Interrupt */
+    gpio_intr_disable(START_ETH_GPIO);
+    gpio_isr_handler_remove(START_ETH_GPIO);
 
-//     // Init common MAC and PHY configs to default
-//     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
-//     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
+    xSemaphoreGiveFromISR(eth_start_handle, NULL);
 
-//     // Update PHY config based on board specific configuration
-//     phy_config.phy_addr = spi_eth_module_config->phy_addr;
-//     phy_config.reset_gpio_num = spi_eth_module_config->phy_reset_gpio;
+    /* Re-Enable the Interrupt */
+    gpio_isr_handler_add(START_ETH_GPIO, gpio_isr_handler, NULL);
+    gpio_intr_enable(START_ETH_GPIO);
+}
 
-//     // Configure SPI interface for specific SPI module
-//     spi_device_interface_config_t spi_devcfg = {
-//         .mode = 0,
-//         .clock_speed_hz = ETH_SPI_CLOCK_MHZ * 1000 * 1000,
-//         .spics_io_num = spi_eth_module_config->spi_cs_gpio,
-//         .queue_size = 20
-//     };
+void start_eth_task(void* args)
+{
+    eth_task_started = true;
 
-//     // Init vendor specific MAC config to default, and create new SPI Ethernet MAC instance
-//     // and new PHY instance based on board configuration
-//     eth_w5500_config_t w5500_config = ETH_W5500_DEFAULT_CONFIG(ETH_HOST, &spi_devcfg);
-//     w5500_config.int_gpio_num = spi_eth_module_config->int_gpio;
-//     w5500_config.poll_period_ms = spi_eth_module_config->polling_ms;
-//     esp_eth_mac_t *mac = esp_eth_mac_new_w5500(&w5500_config, &mac_config);
-//     esp_eth_phy_t *phy = esp_eth_phy_new_w5500(&phy_config);
+    while (true)
+    {
+        if (xSemaphoreTake(eth_start_handle, portMAX_DELAY) == pdTRUE)
+        {
+            if (!eth_driver_started)
+            {
+                ESP_LOGI(ETH_TAG, "Starting Ethernet Driver");
+                init_eth();
+                eth_driver_started = true;
+            }
+            else
+            {
+                ESP_LOGW(ETH_TAG, "Ethernet Driver already started");
 
-//     // Init Ethernet driver to default and install it
-//     esp_eth_handle_t eth_handle = NULL;
-//     esp_eth_config_t eth_config_spi = ETH_DEFAULT_CONFIG(mac, phy);
-//     if ( esp_eth_driver_install(&eth_config_spi, &eth_handle) != ESP_OK )
-//     {
-//         ESP_LOGE(ETH_TAG, "SPI Ethernet driver install failed");
-//         return NULL;
-//     }
+                
+            }
+        }
+    }
+    vTaskDelete(NULL);
+}
 
-//     // The SPI Ethernet module might not have a burned factory MAC address, we can set it manually.
-//     if (spi_eth_module_config->mac_addr != NULL) {
-//         // ESP_GOTO_ON_FALSE(esp_eth_ioctl(eth_handle, ETH_CMD_S_MAC_ADDR, spi_eth_module_config->mac_addr) == ESP_OK,
-//         //                                 NULL, err, TAG, "SPI Ethernet MAC address config failed");
-//     }
+void setup_eth_gpio()
+{
+    eth_start_handle = xSemaphoreCreateBinary();
+    xTaskCreate(start_eth_task, "ETH_START", 3072, NULL, 3, NULL);
 
-//     if (mac_out != NULL) {
-//         *mac_out = mac;
-//     }
-//     if (phy_out != NULL) {
-//         *phy_out = phy;
-//     }
-//     return eth_handle;
-// // err:
-// //     if (eth_handle != NULL) {
-// //         esp_eth_driver_uninstall(eth_handle);
-// //     }
-// //     if (mac != NULL) {
-// //         mac->del(mac);
-// //     }
-// //     if (phy != NULL) {
-// //         phy->del(phy);
-// //     }
-// //     return ret;
-// }
+    gpio_reset_pin(START_ETH_GPIO);
+    gpio_input_enable(START_ETH_GPIO);
+    gpio_pullup_en(START_ETH_GPIO);
+
+    gpio_set_intr_type(START_ETH_GPIO, GPIO_INTR_POSEDGE);
+    gpio_install_isr_service(0);
+    gpio_isr_handler_add(START_ETH_GPIO, gpio_isr_handler, NULL);
+    gpio_intr_enable(START_ETH_GPIO);
+
+    ESP_LOGI(ETH_TAG, "Setup ETH GPIO Successfully");
+}
+
+void init_eth()
+{
+    if (eth_driver_started)
+        return;
+    
+    ESP_LOGI(ETH_TAG, "Init ETH");
+    ESP_ERROR_CHECK(ethernet_init_all(&eth_handle, &eth_port_cnt));
+
+    // Create instance(s) of esp-netif for Ethernet(s)
+    if (eth_port_cnt == 1) {
+        ESP_LOGI(ETH_TAG, "1 ETH found");
+
+        // Use ESP_NETIF_DEFAULT_ETH when just one Ethernet interface is used and you don't need to modify
+        // default esp-netif configuration parameters.
+        esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
+        esp_netif_t *eth_netif = esp_netif_new(&cfg);
+        // Attach Ethernet driver to TCP/IP stack
+        ESP_ERROR_CHECK(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle[0])));
+    } else {
+        ESP_LOGW(ETH_TAG, "Ethernet Count not expected: %d", eth_port_cnt);
+    }
+    
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
+
+    ESP_ERROR_CHECK(esp_eth_start(eth_handle[0]));
+
+    eth_dev_info_t info = ethernet_init_get_dev_info(eth_handle[0]);
+    ESP_LOGI(ETH_TAG, "Device Name: %s", info.name);
+    ESP_LOGI(ETH_TAG, "Device type: ETH_DEV_TYPE_SPI(%d)", info.type);
+    ESP_LOGI(ETH_TAG, "Pins: cs: %d, intr: %d", info.pin.eth_spi_cs, info.pin.eth_spi_int); 
+
+    eth_driver_started = true;
+}
+
+void eth_transmit()
+{
+    // esp_eth_transmit();
+}

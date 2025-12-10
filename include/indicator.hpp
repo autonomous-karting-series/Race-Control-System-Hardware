@@ -8,10 +8,9 @@
 #include "driver/gpio.h"
 
 #define ONBOARD_LED GPIO_NUM_15
-#define RX_LED GPIO_NUM_2
+#define RX_LED GPIO_NUM_1
 
 esp_err_t setup_indicator_leds();
-esp_err_t start_rx_led();
 esp_err_t notify_rx_led();
 
 static const char RX_LED_TAG[] = "INDICATOR";
